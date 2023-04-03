@@ -8,6 +8,9 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+    
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -23,7 +26,7 @@ jobs:
         node-version: 'lts/*'
         cache: 'npm'
     - run: npm ci
-    - run: npm run build:ids
+    - run: npm run build:ids -- -c 4
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
       with:
