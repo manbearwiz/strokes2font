@@ -1,26 +1,23 @@
-const { join, basename, resolve } = require("path");
-const { createReadStream, createWriteStream, readdirSync, mkdirSync } = require("fs");
+const path = require("path");
+const fs = require("fs");
 const Inkscape = require("inkscape");
 const replaceStream = require("replacestream");
 const async = require("async");
 const svgtofont = require("svgtofont");
-const path = require("path");
 const SVGOTransform = require("./svgoTransform");
 const { program } = require("commander");
 
-function strokeToPath() {
-  return new Inkscape([
+const strokeToPath = () =>
+  new Inkscape([
     "--actions=select-all;selection-ungroup;select-all;object-stroke-to-path;",
     "--export-type=svg",
   ]);
-}
 
-function fillBetweenPaths() {
-  return new Inkscape([
+const fillBetweenPaths = () =>
+  new Inkscape([
     "--actions=select-all;path-break-apart;select-all;path-fill-between-paths;",
     "--export-type=svg",
   ]);
-}
 
 program
   .name("strokes2font")
@@ -35,23 +32,20 @@ program
   .parse();
 
 const options = program.opts();
+const source = path.resolve(options.source);
+const destination = path.resolve(options.destination);
+const temp = path.resolve("./dist/temp");
 
-const source = resolve(options.source);
-const destination = resolve(options.destination);
-const concurrency = options.concurrency;
-const temp = resolve("./dist/temp");
-
-mkdirSync(temp, { recursive: true});
+fs.mkdirSync(temp, { recursive: true });
 
 const queue = async.queue((fileName, callback) => {
-  const filePath = join(source, fileName);
-  const outPath = join(temp, fileName);
-
+  const filePath = path.join(source, fileName);
+  const outPath = path.join(temp, fileName);
   console.log(filePath);
 
-  const outputStream = createWriteStream(outPath);
-
-  const stream = createReadStream(filePath, { encoding: "utf8" })
+  const outputStream = fs.createWriteStream(outPath);
+  const stream = fs
+    .createReadStream(filePath, { encoding: "utf8" })
     .pipe(
       replaceStream(
         'xmlns="http://www.w3.org/2000/svg"',
@@ -64,25 +58,23 @@ const queue = async.queue((fileName, callback) => {
 
   stream.on("error", callback);
   outputStream.on("finish", callback);
-}, concurrency);
+}, options.concurrency);
 
-readdirSync(source)
+fs.readdirSync(source)
   .filter((file) => file.endsWith(".svg"))
-  .forEach((file) => {
-    queue.push(file);
-  });
+  .forEach((file) => queue.push(file));
 
 queue.drain(() => {
   console.log("All files processed successfully");
 
   svgtofont({
-    src: temp, // svg path
-    dist: destination, // output path
+    src: temp,
+    dist: destination,
     emptyDist: true,
     outSVGReact: false,
     useNameAsUnicode: true,
-    fontName: "ids", // font name
-    css: true, // Create CSS files.
+    fontName: "ids",
+    css: true,
     svgicons2svgfont: {
       normalize: true,
       fontHeight: 1000,
@@ -94,34 +86,8 @@ queue.drain(() => {
         description: "Converts SVG fonts to TTF/EOT/WOFF/WOFF2/SVG format.",
         keywords: "svgtofont,TTF,EOT,WOFF,WOFF2,SVG",
       },
-      description: ``,
-      corners: {
-        url: "https://github.com/jaywcjlove/svgtofont",
-        width: 62, // default: 60
-        height: 62, // default: 60
-        bgColor: "#dc3545", // default: '#151513'
-      },
-      links: [
-        {
-          title: "GitHub",
-          url: "https://github.com/jaywcjlove/svgtofont",
-        },
-        {
-          title: "Feedback",
-          url: "https://github.com/jaywcjlove/svgtofont/issues",
-        },
-        {
-          title: "Font Class",
-          url: "index.html",
-        },
-        {
-          title: "Unicode",
-          url: "unicode.html",
-        },
-      ],
-      footerInfo: `Licensed under MIT. (Yes it's free and <a href="https://github.com/jaywcjlove/svgtofont">open-sourced</a>`,
     },
   }).then(() => {
-    console.log("done!");
+    console.log("Done!");
   });
 });

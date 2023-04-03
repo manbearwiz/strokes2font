@@ -17,13 +17,11 @@
     "url": "https://github.com/manbearwiz/strokes2font/issues"
   },
   "homepage": "https://github.com/manbearwiz/strokes2font#readme",
-  "devDependencies": {
+  "dependencies": {
+    "commander": "^10.0.0",
     "ids-identity": "^4.14.6",
     "inkscape": "^3.1.1",
     "replacestream": "^4.0.3",
     "svgtofont": "^3.23.1"
-  },
-  "dependencies": {
-    "commander": "^10.0.0"
   }
 }
