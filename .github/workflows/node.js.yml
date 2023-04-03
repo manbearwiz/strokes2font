@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install inkscape
-      run: sudo apt install -y inkscape
+      run: sudo apt update && sudo apt install -y inkscape
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
