@@ -43,10 +43,7 @@ fs.mkdirSync(temp, { recursive: true });
 
 const queue = async.queue((fileName, callback) => {
   const filePath = path.join(source, fileName);
-  const outPath = path.join(
-    temp,
-    `${iconMap[fileName.replace(/\.[^.]*$/, "")]}.svg`
-  );
+  const outPath = path.join(temp, fileName);
   console.log(filePath);
 
   const outputStream = fs.createWriteStream(outPath);
