@@ -6,6 +6,9 @@ const async = require("async");
 const svgtofont = require("svgtofont");
 const SVGOTransform = require("./svgoTransform");
 const { program } = require("commander");
+const iconMap = require("./iconMap");
+
+const supportedInforIcons = Object.keys(iconMap);
 
 const strokeToPath = () =>
   new Inkscape([
@@ -40,7 +43,10 @@ fs.mkdirSync(temp, { recursive: true });
 
 const queue = async.queue((fileName, callback) => {
   const filePath = path.join(source, fileName);
-  const outPath = path.join(temp, fileName);
+  const outPath = path.join(
+    temp,
+    `${iconMap[fileName.replace(/\.[^.]*$/, "")]}.svg`
+  );
   console.log(filePath);
 
   const outputStream = fs.createWriteStream(outPath);
@@ -61,7 +67,11 @@ const queue = async.queue((fileName, callback) => {
 }, options.concurrency);
 
 fs.readdirSync(source)
-  .filter((file) => file.endsWith(".svg"))
+  .filter(
+    (file) =>
+      file.endsWith(".svg") &&
+      supportedInforIcons.includes(file.replace(/\.[^.]*$/, ""))
+  )
   .forEach((file) => queue.push(file));
 
 queue.drain(() => {
