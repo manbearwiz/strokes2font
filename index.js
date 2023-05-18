@@ -42,9 +42,11 @@ const temp = path.resolve("./dist/temp");
 fs.mkdirSync(temp, { recursive: true });
 
 const queue = async.queue((fileName, callback) => {
+  const iconName = path.basename(fileName, '.svg');
+  const kbxName = iconMap[iconName];
   const filePath = path.join(source, fileName);
-  const outPath = path.join(temp, fileName);
-  console.log(filePath);
+  const outPath = path.join(temp, `${kbxName}.svg`);
+  console.log(outPath);
 
   const outputStream = fs.createWriteStream(outPath);
   const stream = fs
@@ -67,7 +69,7 @@ fs.readdirSync(source)
   .filter(
     (file) =>
       file.endsWith(".svg") &&
-      supportedInforIcons.includes(file.replace(/\.[^.]*$/, ""))
+      supportedInforIcons.includes(path.basename(file, '.svg'))
   )
   .forEach((file) => queue.push(file));
 
